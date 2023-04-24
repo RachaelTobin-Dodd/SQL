@@ -1,4 +1,4 @@
---Create a bakery database
+-- Create a bakery database
 
 CREATE TABLE Bakery (id INTEGER PRIMARY KEY, item TEXT, bake_time INTEGER, price INTEGER, quantity_baked INTEGER, quantity_sold INTEGER);
 INSERT INTO Bakery VALUES (1, "croissant", 5, 3, 20, 20);
@@ -17,16 +17,16 @@ INSERT INTO Bakery VALUES (13, "pain au chocolate", 5.5, 4.5, 20, 20);
 INSERT INTO Bakery VALUES (14, "zucchini walnut muffins", 1.25, 3.5, 16, 7);
 INSERT INTO Bakery VALUES (15, "blondies", 1, 2, 15, 11);
 
---display teh database ordered by price
+-- Display the database ordered by price
 SELECT * FROM Bakery ORDER BY price;
 
--what is the total number of baked goods sold?
+-- What is the total number of baked goods sold?
 SELECT SUM(quantity_sold) FROM Bakery;
 
--which items cost more than $3?
+-- Which items cost more than $3?
 SELECT * FROM Bakery WHERE price <3;
 
---which three items take the longest to make?
+-- Which three items take the longest to make?
 SELECT item, bake_time FROM Bakery
 ORDER BY bake_time DESC
 LIMIT 3;
