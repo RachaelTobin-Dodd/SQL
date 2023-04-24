@@ -1,0 +1,32 @@
+--Create a bakery database
+
+CREATE TABLE Bakery (id INTEGER PRIMARY KEY, item TEXT, bake_time INTEGER, price INTEGER, quantity_baked INTEGER, quantity_sold INTEGER);
+INSERT INTO Bakery VALUES (1, "croissant", 5, 3, 20, 20);
+INSERT INTO Bakery VALUES (2, "coffee cake", .75, 2.5, 16, 12);
+INSERT INTO Bakery VALUES (3, "brownies", 1, 2, 15, 13);
+INSERT INTO Bakery VALUES (4, "blueberry muffins", .5, 3.5, 12, 11);
+INSERT INTO Bakery VALUES (5, "carrot cake muffins", .75, 3.5, 12, 9);
+INSERT INTO Bakery VALUES (6, "chocolate cupcake", 1.5, 4, 24, 20);
+INSERT INTO Bakery VALUES (7, "almond poppy muffin", .5, 3.5, 12, 12);
+INSERT INTO Bakery VALUES (8, "crasin scones", 3, 2.75, 16, 13);
+INSERT INTO Bakery VALUES (9, "chocolate chip chookies", 24, 4, 30, 25);
+INSERT INTO Bakery VALUES (10, "lemon curd sandwich cookies", 6, 2, 15, 8);
+INSERT INTO Bakery VALUES (11, "spicy sugar cookies", 1, 4, 25, 22);
+INSERT INTO Bakery VALUES (12, "chewy ginger cookies", .75, 3, 18, 17);
+INSERT INTO Bakery VALUES (13, "pain au chocolate", 5.5, 4.5, 20, 20);
+INSERT INTO Bakery VALUES (14, "zucchini walnut muffins", 1.25, 3.5, 16, 7);
+INSERT INTO Bakery VALUES (15, "blondies", 1, 2, 15, 11);
+
+--display teh database ordered by price
+SELECT * FROM Bakery ORDER BY price;
+
+-what is the total number of baked goods sold?
+SELECT SUM(quantity_sold) FROM Bakery;
+
+-which items cost more than $3?
+SELECT * FROM Bakery WHERE price <3;
+
+--which three items take the longest to make?
+SELECT item, bake_time FROM Bakery
+ORDER BY bake_time DESC
+LIMIT 3;
