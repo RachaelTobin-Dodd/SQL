@@ -1,0 +1,74 @@
+/* I created a short database to link Taylor Swift albums and songs from her latest album Midnights with her rumored muses */
+
+CREATE TABLE TaylorSwiftAlbums (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT);
+
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Debut");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Fearless TV");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Speak Now");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Red TV");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("1989");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Reputation");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Lover");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Follore");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Evermore");
+INSERT INTO TaylorSwiftAlbums (title) VALUES ("Midnights");
+
+CREATE TABLE TaylorSwiftMuses (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, occupation TEXT, album_id1 INTEGER, album_id2 INTEGER, album_id3 INTEGER, album_id4 INTEGER, album_id5 INTEGER, album_id6 INTEGER);
+
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2, album_id3) VALUES ("Andrea Swift (mom)", "mom", 2, 7, 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2,album_id3) VALUES ("Joe Jonas", "singer", 2, 3, 8);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2) VALUES ("Taylor Lautner", "actor", 3, 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2) VALUES ("John Mayer", "singer", 3, 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2) VALUES ("Kanye West", "singer", 3, 6);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2, album_id3) VALUES ("Dianna Agron", "actor", 4, 5, 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1) VALUES ("Jake Gyllenhal", "actor", 4);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1) VALUES ("Harry Styles", "singer", 5);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2, album_id3, album_id4, album_id5, album_id6) VALUES ("Karlie Kloss", "model", 5, 6, 7, 8, 9, 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2, album_id3, album_id4, album_id5) VALUES ("Joe Alwyn", "actor", 6, 7, 8, 9, 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1) VALUES ("Scooter Braun", "record label owner", 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1) VALUES ("Zoe Ktavitz", "actor", 10);
+INSERT INTO TaylorSwiftMuses (name, occupation, album_id1, album_id2, album_id3, album_id4, album_id5, album_id6) VALUES ("Self", "singer", 1, 6, 7, 8, 9, 10);
+
+CREATE TABLE Midnights3AM (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, muse_id INTEGER);
+
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Lavender Haze", 13);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Maroon", 9);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Anti-Hero", 13);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Snow On The Beach", 6);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("You're On Your Own Kid", 13);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Midnight Rain", 3);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Question...?", 9);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Vigilante Shit", 11);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Bejewled", 13);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Labyrinth", NULL);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Karma", 11);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Sweet Nothing", 1);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Mastermind", 10);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("The Great War", 9);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Bigger Than The WHole Sky", NULL);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Paris", 9);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("High Infidelity", 12);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Glitch", 12);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Would've, Could've, Should've", 4);
+INSERT INTO Midnights3AM (title, muse_id) VALUES ("Dear Reader", 13);
+
+/* display all from TaylorSwift Muses */
+SELECT * FROM TaylorSwiftMuses;
+
+/* Display the Muse and the first album they are referenced on using an INNER JOIN*/
+SELECT TaylorSwiftMuses.name, TaylorSwiftAlbums.title
+FROM TaylorSwiftMuses
+JOIN TaylorSwiftAlbums
+ON TaylorSwiftMuses.album_id1 = TaylorSwiftAlbums.id;
+
+/* Display the Midnights songs and their rumored muse using a LEFT OUTER JOIN*/
+SELECT Midnights3AM.title, TaylorSwiftMuses.name AS muse FROM Midnights3AM
+LEFT OUTER JOIN TaylorSwiftMuses
+ON Midnights3AM.muse_id = TaylorSwiftMuses.id;
+
+/* Display the Midnights songs ORDERED BY muse*/
+SELECT Midnights3AM.title, TaylorSwiftMuses.name AS muse FROM Midnights3AM
+LEFT OUTER JOIN TaylorSwiftMuses
+ON Midnights3AM.muse_id = TaylorSwiftMuses.id
+ORDER BY muse;
+
