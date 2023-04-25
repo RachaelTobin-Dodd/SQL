@@ -1,0 +1,61 @@
+/* In this SQL I am querying a database of the NASA astronaut yearbook */
+/* Source: https://www.kaggle.com/nasa/astronaut-yearbook */
+
+
+/* Avg space walk hrs */
+SELECT Gender, AVG(Space_Walks_hr) AS Avg_SpaceWalk_hours
+FROM astronauts
+GROUP BY Gender;
+
+/* Max space walk hrs */
+SELECT Gender, MAX(Space_Walks_hr) AS Max_SpaceWalk_hours
+FROM astronauts
+Group By Gender;
+
+/* Min space walk hrs */
+SELECT MIN(Space_Walks_hr) AS Min_SpaceWalk_hours
+FROM astronauts;
+
+/* Display all women who has any space walk hours */
+Select Count(Gender)
+FROM astronauts
+WHERE Gender='Female'
+AND Space_Walks_hr > 0;
+
+/* Avg space flight hrs */
+SELECT Gender, AVG(Space_Flight_hr) AS Avg_FlightHours
+FROM astronauts
+GROUP BY Gender;
+
+/* Female space walk hrs */
+Select Name, Space_Walks, Space_Walks_hr
+FROM astronauts
+WHERE Gender='Female'
+AND Space_Walks_hr > 0
+ORDER BY Space_Walks_hr DESC;
+
+/* Female space flight hrs using a CASE clause to show above and below average times */
+Select Name, Space_Flights, Space_Flight_hr,
+CASE
+WHEN Space_Flight_hr > 1577 THEN 'Above Average'
+WHEN Space_Flight_hr < 1577 THEN 'Below Average'
+END AS FlightHours
+FROM astronauts
+WHERE Gender='Female' 
+Order BY Space_Flight_hr DESC; 
+
+/* How many different graduate majors are there? */
+Select COUNT(DISTINCT Graduate_Major)
+FROM astronauts;
+
+/* Which graduate majors (female astronauts) have the most combined space walk hours? */
+SELECT Graduate_Major, AVG(Space_Walks_hr) AS AVG_WALK
+FROM astronauts
+WHERE Gender = 'Female'
+GROUP BY Graduate_Major
+HAVING AVG_WALK > 0
+ORDER BY AVG_WALK DESC;
+
+
+
+
