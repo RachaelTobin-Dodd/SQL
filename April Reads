@@ -1,0 +1,44 @@
+/* April Books Read */
+
+CREATE TABLE books_read (id INTEGER PRIMARY KEY, title TEXT, author TEXT, format TEXT, rating REAL);
+
+INSERT INTO books_read (title, author, format, rating) VALUES ("Daughter of the Moon Goddess", "Sue Lynn Tan", "audiobook", 4.75);
+INSERT INTO books_read (title, author, format, rating) VALUES ("The Daughters of Izdihar", "Hadeer Elsbai", "audiobook", 5.0);
+INSERT INTO books_read (title, author, format, rating) VALUES ("A Sinister Revenge", "Deanna Raybourn", "audiobook", 4.5);
+INSERT INTO books_read (title, author, format, rating) VALUES ("Half a Soul", "OLivia Atwater", "audiobook", 4.0);
+INSERT INTO books_read (title, author, format, rating) VALUES ("The Heartbreak Bakery", "A.R. Capetta", "audiobook", 5.0);
+INSERT INTO books_read (title, author, format, rating) VALUES ("Her Majesty's Royal Coven", "Juno Dawson", "ebook", 5.0);
+INSERT INTO books_read (title, author, format, rating) VALUES ("High Times in the Low Parliment", "Kelly Robson", "audio", 3.75);
+INSERT INTO books_read (title, author, format, rating) VALUES ("Go Hex Yourself", "Jessica Clare", "ebook", 0.0);
+INSERT INTO books_read (title, author, format, rating) VALUES ("Where it Rains in Colour", "Denise Crittendon", "ebook", NULL);
+INSERT INTO books_read (title, author, format, rating) VALUES ("En Ö i Havet", "Annika Thor", "book", NULL);
+
+/* Display all from table */
+SELECT * FROM books_read;
+
+/* Update an entry */
+UPDATE books_read SET format = "paperback" WHERE id = 10;
+
+/* Display updated table */
+SELECT * FROM books_read;
+
+/* Display books ordered by rating and using a CASE clause to display the current status */
+SELECT title, rating, 
+CASE
+WHEN rating > 0 THEN "finished"
+WHEN rating = 0.0 THEN "DNF"
+ELSE "still reading"
+END AS "status"
+FROM books_read
+ORDER BY rating DESC;
+
+/* Calculate Average rating for all finished books */
+SELECT AVG(rating) 
+FROM Books_read 
+WHERE rating >0;
+
+/* Delete a row */
+DELETE FROM books_read WHERE id = 8;
+
+/* Display updated table */
+SELECT * FROM books_read;
