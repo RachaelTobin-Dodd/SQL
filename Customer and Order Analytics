@@ -1,10 +1,10 @@
+/* In this SQL, I'm querying a database with multiple tables in it to quantify statistics about customer and order data. */
+
 /* What coloumns are in the customers table?*/
 SELECT * FROM BIT_DB.customers LIMIT 20;
-/*order_id, acctnum*/
 
 /*What columns are in the JanSales table?*/
 SELECT * FROM BIT_DB.JanSales LIMIT 20;
-/*orderID, Product, Quantity, price, orderdate, location*/
 
 /* 1. How many orders were placed in January? */
 SELECT COUNT (orderID)
