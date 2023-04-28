@@ -6,6 +6,14 @@ SELECT * FROM BIT_DB.customers LIMIT 20;
 /*What columns are in the JanSales table?*/
 SELECT * FROM BIT_DB.JanSales LIMIT 20;
 
+/* What coloumns are in the customers table?*/
+SELECT * FROM BIT_DB.customers LIMIT 20;
+/*order_id, acctnum*/
+
+/*What columns are in the JanSales table?*/
+SELECT * FROM BIT_DB.JanSales LIMIT 20;
+/*orderID, Product, Quantity, price, orderdate, location*/
+
 /* 1. How many orders were placed in January? */
 SELECT COUNT (orderID)
 FROM BIT_DB.JanSales
@@ -30,18 +38,23 @@ AND orderID <> 'Order ID';
 /* 4. Which product was the cheapest one sold in January, and what was the price? */
 SELECT distinct Product, price
 FROM BIT_DB.JanSales
-WHERE  price in (SELECT min(price) FROM BIT_DB.JanSales)
+WHERE  price in (SELECT min(price) FROM BIT_DB.JanSales);
 /*or*/
 SELECT distinct Product, price 
 FROM BIT_DB.JanSales 
 ORDER BY price ASC LIMIT 1;
+/*or*/
+SELECT Product, min(price) 
+FROM BIT_DB.JanSales Jan 
+GROUP BY product, price 
+ORDER BY price ASC
+LIMIT 1
 
 /* 5. What is the total revenue for each product sold in January? 
 (Revenue can be calculated using the number of products sold and the price of the products). */
 SELECT SUM(quantity)*price AS revenue, Product
 FROM BIT_DB.JanSales
 GROUP BY Product;
-
 
 /* 6. Which products were sold in February at 548 Lincoln St, Seattle, WA 98101, how many of each were sold, and what was the total revenue? */
 SELECT Product, SUM(Quantity), SUM(Quantity)*price AS revenue 
@@ -50,6 +63,7 @@ WHERE location = '548 Lincoln St, Seattle, WA 98101'
 GROUP BY Product;
 
 /* 7. How many customers ordered more than 2 products at a time in February, and what was the average amount spent for those customers? */
+
 SELECT COUNT(DISTINCT a.acctnum), AVG(b.quantity*price) 
 FROM BIT_DB.customers a
 JOIN BIT_DB.FebSales b
