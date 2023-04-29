@@ -27,3 +27,102 @@ time_signature integer NOT NULL
 #Then I inserted the Spotify Data .csv into the table.
 
 #Next, I explored the data using the following SQL. 
+
+/* 1. What is the average danceability by artist and track? */
+
+SELECT artist_name, AVG(danceability)
+FROM BIT_DB.Spotifydata
+GROUP BY artist_name
+ORDER BY AVG(danceability) DESC;
+
+/* 2. Who are the top 10 artists based on popularity?  */
+
+SELECT DISTINCT artist_name, AVG(popularity)
+FROM BIT_DB.Spotifydata
+GROUP BY artist_name
+ORDER BY AVG(popularity) DESC 
+LIMIT 10;
+
+ /* 3. What are the top 10 tracks based on popularity? */
+ 
+SELECT track_name, artist_name, popularity
+FROM BIT_DB.spotifydata
+ORDER BY popularity desc
+LIMIT 10;
+
+/* 4. What artist released the longest song? What was the song title? How long was it? */
+
+SELECT artist_name, track_name, duration_ms
+FROM BIT_DB.spotifydata
+ORDER BY duration_ms DESC
+LIMIT 1;
+
+/* 5. What's the average danceability for the 10 most popular songs? */
+
+SELECT AVG(danceability)
+FROM BIT_DB.Spotifydata
+WHERE track_name IN (SELECT track_name FROM BIT_DB.Spotifydata ORDER BY popularity DESC LIMIT 10)
+GROUP BY (SELECT track_name FROM BIT_DB.Spotifydata ORDER BY popularity DESC LIMIT 10); 
+
+/* 6. How many artists have multiple songs in the Top 50? Who are those arists and how many songs do they have in the Top 50?*/
+
+SELECT artist_name, COUNT(artist_name)
+FROM BIT_DB.Spotifydata
+GROUP BY artist_name
+HAVING COUNT(artist_name) > 1
+ORDER BY COUNT(artist_name) DESC;
+
+/* 7. How many songs have another artist featured on it? */
+
+SELECT COUNT(track_name)
+FROM BIT_DB.Spotifydata
+WHERE track_name LIKE '%(feat%' 
+OR track_name LIKE '%with%'
+AND track_name <> 'WITHOUT YOU'
+GROUP BY (SELECT track_name
+FROM BIT_DB.Spotifydata
+WHERE track_name LIKE '%(feat%' 
+OR track_name LIKE '%with%'
+AND track_name <> 'WITHOUT YOU');
+
+/* 8. Which artist has the most positive song? What is the song? (Valence - The higher the value, the more positive mood for the song) */
+
+SELECT artist_name, track_name, valence
+FROM BIT_DB.Spotifydata
+ORDER BY valence DESC
+LIMIT 1;
+
+/* 9. Which artist has the least positive song? What is the song? */
+
+SELECT artist_name, track_name, valence
+FROM BIT_DB.Spotifydata
+ORDER BY valence ASC
+LIMIT 1;
+
+/* 10. What is the average positiveness for the Top 50 songs? */
+
+SELECT AVG(valence)
+FROM BIT_DB.Spotifydata;
+
+/* 11. What is the average positiveness for the Top 10 songs? */
+SELECT AVG(valence)
+FROM BIT_DB.Spotifydata
+WHERE track_name IN (SELECT track_name FROM BIT_DB.Spotifydata ORDER BY popularity DESC LIMIT 10)
+GROUP BY (SELECT track_name FROM BIT_DB.Spotifydata ORDER BY popularity DESC LIMIT 10); 
+
+/* 12. How long would it take to listen to a playlist with all Top 50 songs? */
+
+SELECT SUM(duration_ms)
+FROM BIT_DB.Spotifydata;
+
+/* 13. What is the average tempo for the Top 50 songs? */
+
+SELECT AVG(tempo)
+FROM BIT_DB.Spotifydata;
+
+/* 14. Which song have the higest tempo? */
+
+SELECT artist_name, track_name, tempo
+FROM BIT_DB.Spotifydata
+ORDER BY valence DESC
+LIMIT 1;
