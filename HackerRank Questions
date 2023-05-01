@@ -79,7 +79,14 @@ OR CITY LIKE '%i'
 OR CITY LIKE '%o' 
 OR CITY LIKE '%u');
 
-/* */
+/* Query the list of CITY names from STATION that do not start with vowels. Your result cannot contain duplicates. */
+
+SELECT DISTINCT City FROM STATION 
+WHERE CITY LIKE 'A%' 
+AND CITY LIKE 'E%' 
+AND CITY LIKE 'I%' 
+AND CITY LIKE 'O%' 
+AND CITY LIKE 'U%'
 
 /* */
 
