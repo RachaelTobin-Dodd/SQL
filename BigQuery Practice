@@ -1,0 +1,645 @@
+/** In this file I have compiled the practice prompts I completed in BiqQuery duirng my Google Professional Certificate.
+It is a good summary of all the skills I have learned including data cleaning skills, data aggregation and calcuations,
+and more advanced WITH clauses, JOINS, and Subqueries **/
+
+--Temporary Tables
+--With clauses
+WITH trips_over_1_hr AS (
+  SELECT *
+  FROM bigquery-public-data.new_york_citibike.citibike_trips
+  WHERE
+    tripduration >= 60
+)
+
+## Count how many trips are 60+ minutes long
+
+SELECT
+  COUNT(*) AS CNT
+FROM 
+  trips_over_1_hr;
+
+## Temporary Table - whihc bike has been used the most/longest minutes ridden
+
+WITH longest_used_bike AS (
+  SELECT 
+    bike_id,
+    SUM(duration_minutes) AS trip_duration
+FROM
+  bigquery-public-data.austin_bikeshare.bikeshare_trips
+GROUP BY
+  bike_id
+ORDER BY
+  trip_duration DESC
+  LIMIT 1
+)
+
+## From which station does this bike start most frequently
+
+SELECT
+  trips.start_station_id, 
+  COUNT(*) AS trip_count
+FROM 
+  longest_used_bike AS longest
+  INNER JOIN
+    bigquery-public-data.austin_bikeshare.bikeshare_trips AS trips
+  ON 
+    longest.bike_id = trips.bike_id
+GROUP BY
+  trips.start_station_id
+ORDER BY
+  trip_count DESC
+LIMIT 1;
+
+--validation
+SELECT *
+FROM `my-first-sandbox-394813.sales.sales_info`
+LIMIT 10;
+
+--Date range of data
+SELECT
+  MAX(Date) AS max_date,
+  MIN(Date) AS min_date
+FROM 
+  `my-first-sandbox-394813.sales.sales_info`;
+
+-- gathering data to export to csv
+SELECT
+  EXTRACT(YEAR FROM Date) AS Year,
+  EXTRACT (MONTH FROM Date) AS Month,
+  ProductId,
+  ROUND(MAX(UnitPrice),2) AS UnitPrice,
+  SUM(Quantity) AS UnitsSold 
+FROM 
+  `my-first-sandbox-394813.sales.sales_info`
+GROUP BY
+  Year,
+  Month,
+  ProductId
+ORDER BY
+  Year,
+  Month,
+  ProductId;
+
+## CALCULATIONS
+--Avocados - checkng total bags calculation
+SELECT
+  Date,
+  Region,
+  Small_Bags,
+  Large_Bags,
+  XLarge_Bags,
+  Total_Bags,
+  Small_Bags + Large_Bags + XLarge_Bags AS Total_Bags_Calc
+FROM
+  my-first-sandbox-394813.avocado_data.avocado_prices;
+
+-- percent small bags with WHERE cleaning
+SELECT
+  Date,
+  Region,
+  Small_Bags,
+  Total_Bags,
+  (Small_Bags / Total_Bags)*100 AS Small_Bags_Percent
+FROM
+  my-first-sandbox-394813.avocado_data.avocado_prices
+WHERE
+  Total_Bags <> 0;
+
+## Aggregations
+--CitiBikes - group/order by with aggregate functions
+SELECT 
+  EXTRACT(YEAR FROM starttime) AS year,
+  COUNT(*) AS number_of_rides
+FROM 
+  `bigquery-public-data.new_york_citibike.citibike_trips`
+GROUP BY 
+  year
+ORDER BY 
+  year DESC;
+
+--NY subway - subtraction calculation
+SELECT
+  station_name,
+  ridership_2013,
+  ridership_2014,
+  ridership_2014 - ridership_2013 AS change_2014_raw
+FROM
+  `bigquery-public-data.new_york_subway.subway_ridership_2013_present`;
+
+--average calcuation 13-16
+SELECT
+  station_name,
+  ridership_2013,
+  ridership_2014,
+  ridership_2015,
+  ridership_2016,
+  (ridership_2013 + ridership_2014 + ridership_2015 + ridership_2016) / 4 AS average
+FROM
+  `bigquery-public-data.new_york_subway.subway_ridership_2013_present`;
+
+--average calcuation 16-18
+SELECT
+  station_name,
+  ridership_2016,
+  ridership_2017,
+  ridership_2018,
+  (ridership_2016 + ridership_2017 + ridership_2018) / 3 AS average
+FROM
+  `bigquery-public-data.new_york_subway.subway_ridership_2013_present`;
+
+## SUBQUERIES
+
+SELECT
+  station_id,
+  num_bikes_available,
+(SELECT  
+  AVG(num_bikes_available)
+  FROM `bigquery-public-data.new_york_citibike.citibike_stations`) AS avg_num_bikes_available
+FROM 
+  `bigquery-public-data.new_york_citibike.citibike_stations`;
+
+-- subqueries in a FROM clause
+SELECT
+  station_id,
+  name,
+  number_of_rides AS number_of_rides_starting_at_station
+FROM 
+  (
+    SELECT
+      start_station_id,
+      COUNT(*) num_of_rides
+    FROM `bigquery-public-data.new_york_citibike.citibike_trips` 
+      GROUP BY
+      start_station_id
+    )
+AS station_num_trips
+INNER JOIN
+`bigquery-public-data.new_york_citibike.citibike_stations` ON station_id = start_station_id
+ORDER BY
+  number_of_rides DESC;
+
+  SELECT
+  id,
+  name,
+  number_of_rides AS number_of_rides_starting_station
+FROM
+  (
+    SELECT
+      start_station_id,
+      COUNT(*) number_of_rides
+    FROM
+      bigquery-public-data.london_bicycles.cycle_hire
+    GROUP BY
+      start_station_id
+  )
+  AS station_num_trips
+  INNER JOIN
+  bigquery-public-data.london_bicycles.cycle_stations ON id = start_station_id
+   ORDER BY
+    number_of_rides DESC;
+
+-- Subqueries in a WHERE clause
+SELECT
+  station_id,
+  name
+FROM
+  `bigquery-public-data.new_york_citibike.citibike_stations`
+WHERE
+  station_id IN
+  (
+    SELECT
+      start_station_id
+      FROM
+      `bigquery-public-data.new_york_citibike.citibike_trips` 
+      WHERE
+        usertype = "Subscriber"
+  )
+
+-- Subqueries and aggregation i.e CASE and HAVING clauses
+
+SELECT 
+ warehouse.warehouse_id,
+ CONCAT(warehouse.state, ': ', warehouse.warehouse_alias) AS warehouse_name,
+ COUNT(orders.order_id) AS number_of_orders,
+ (SELECT
+  COUNT(*)
+  FROM warehouse_orders.orders AS orders) AS total_orders,
+ CASE
+  WHEN COUNT(orders.order_id)/(SELECT COUNT(*) FROM warehouse_orders.orders AS orders) <= 0.20
+  THEN "Fulfilled 0-20% of Orders"
+  WHEN COUNT(orders.order_id)/(SELECT COUNT(*) FROM warehouse_orders.orders AS orders) > 0.20
+  AND COUNT(orders.order_id)/(SELECT COUNT(*) FROM warehouse_orders.orders AS orders) <= 0.60
+  THEN "Fulfilled 21-60% of Orders"
+ELSE "Fulfulled more than 60% of Orders"
+END AS fulfillment_summary
+
+FROM
+  warehouse_orders.warehouse AS warehouse
+LEFT JOIN
+  warehouse_orders.orders AS orders
+ON orders.warehouse_id = warehouse.warehouse_id
+GROUP BY
+  warehouse.warehouse_id,
+  warehouse_name
+HAVING
+  COUNT(orders.order_id) >0;
+
+--COUNT 
+SELECT 
+  orders.*,
+  warehouse.warehouse_alias,
+  warehouse.state
+FROM
+  `my-first-sandbox-394813.warehouse_orders.orders` AS orders
+JOIN
+  `my-first-sandbox-394813.warehouse_orders.warehouse` AS warehouse
+  ON
+    orders.warehouse_id = warehouse.warehouse_id;
+
+SELECT 
+  COUNT(warehouse.state) AS num_state
+FROM
+  `my-first-sandbox-394813.warehouse_orders.orders` AS orders
+JOIN
+  `my-first-sandbox-394813.warehouse_orders.warehouse` AS warehouse
+  ON
+    orders.warehouse_id = warehouse.warehouse_id;
+
+SELECT 
+  COUNT(DISTINCT warehouse.state) AS num_state
+FROM
+  `my-first-sandbox-394813.warehouse_orders.orders` AS orders
+JOIN
+  `my-first-sandbox-394813.warehouse_orders.warehouse` AS warehouse
+  ON
+    orders.warehouse_id = warehouse.warehouse_id;
+
+SELECT 
+  warehouse.state AS state,
+  COUNT(DISTINCT order_id) AS num_orders
+FROM
+  `my-first-sandbox-394813.warehouse_orders.orders` AS orders
+JOIN
+  `my-first-sandbox-394813.warehouse_orders.warehouse` AS warehouse
+  ON
+    orders.warehouse_id = warehouse.warehouse_id
+GROUP BY
+  warehouse.state ;
+
+## JOINS
+--World Bank International Education Dataset
+SELECT 
+    `bigquery-public-data.world_bank_intl_education.international_education`.country_name, 
+    `bigquery-public-data.world_bank_intl_education.country_summary`.country_code, 
+    `bigquery-public-data.world_bank_intl_education.international_education`.value
+FROM 
+    `bigquery-public-data.world_bank_intl_education.international_education`
+INNER JOIN 
+    `bigquery-public-data.world_bank_intl_education.country_summary` 
+ON `bigquery-public-data.world_bank_intl_education.country_summary`.country_code = `bigquery-public-data.world_bank_intl_education.international_education`.country_code;
+
+--with aliases
+SELECT 
+    edu.country_name,
+    summary.country_code,
+    edu.value
+FROM 
+    bigquery-public-data.world_bank_intl_education.international_education AS edu
+INNER JOIN 
+    bigquery-public-data.world_bank_intl_education.country_summary AS summary
+ON edu.country_code = summary.country_code;
+
+SELECT 
+    AVG(edu.value) AS average_value, summary.region
+FROM 
+    `bigquery-public-data.world_bank_intl_education.international_education` AS edu
+INNER JOIN 
+    `bigquery-public-data.world_bank_intl_education.country_summary` AS summary
+ON edu.country_code = summary.country_code
+WHERE summary.region IS NOT null
+GROUP BY summary.region
+ORDER BY average_value DESC;
+
+--Michael Jordan mascot Left Join
+SELECT
+ seasons.market AS university,
+ seasons.name AS team_name,
+ seasons.wins,
+ seasons.losses,
+ seasons.ties,
+ mascots.mascot AS team_mascot
+FROM
+ `bigquery-public-data.ncaa_basketball.mbb_historical_teams_seasons` AS seasons
+LEFT JOIN
+ `bigquery-public-data.ncaa_basketball.mascots` AS mascots
+ON
+ seasons.team_id = mascots.id
+WHERE
+ seasons.season = 1984
+ AND seasons.division = 1
+ORDER BY
+ seasons.market;
+
+--JOINS
+SELECT  
+  employees.name AS employee_name,
+  employees.role AS employee_role,
+  departments.name AS department_name
+FROM 
+  employee_data.employees
+INNER JOIN
+  employee_data.departments ON
+  employees.department_id = departments.department_id;
+
+-- LEFT  
+SELECT  
+  employees.name AS employee_name,
+  employees.role AS employee_role,
+  departments.name AS department_name
+FROM 
+  employee_data.employees
+LEFT JOIN
+  employee_data.departments ON
+  employees.department_id = departments.department_id;
+
+-- RIGHT
+--FULL OUTER
+
+--NOAA weather 
+-- temp, wind speed, precipitation for JFK and La Guardia for very day in 2020 by descending date and ascending station**/
+SELECT
+  stn,
+  date,
+-- Use the IF function to replace 9999.9 values, which the dataset description explains is the default value when temperature is missing, with NULLs instead.
+  IF(
+     temp=9999.9,
+     NULL,
+     temp) AS temperature,
+-- Use the IF function to replace 999.9 values, which the dataset description explains is the default value when wind speed is missing, with NULLs instead.
+  IF(
+     wdsp="999.9",
+     NULL,
+     CAST(wdsp AS Float64)) AS wind_speed,
+-- Use the IF function to replace 99.99 values, which the dataset description explains is the default value when precipitation is missing, with NULLs instead.
+  IF(
+     prcp=99.99,
+     0,
+     prcp) AS precipitation
+FROM
+  `bigquery-public-data.noaa_gsod.gsod2020`
+WHERE
+  stn="725030" -- La Guardia
+  OR stn="744860" -- JFK
+ORDER BY
+  date DESC,
+  stn ASC;
+
+--Made new table from the data
+--averages
+SELECT
+    AVG(temperature)
+ FROM `my-first-sandbox-394813.demos.nyc_weather`
+WHERE
+    date BETWEEN '2020-06-01' AND '2020-06-30';
+
+--CDC birth data
+SELECT 
+  * 
+FROM 
+  bigquery-public-data.sdoh_cdc_wonder_natality.county_natality 
+LIMIT 
+  1000;
+
+--10 lowest birth rate counties
+SELECT 
+  * 
+FROM 
+  bigquery-public-data.sdoh_cdc_wonder_natality.county_natality 
+ORDER BY
+  Births ASC
+LIMIT 
+  10;
+
+--top 10 counties
+SELECT 
+  * 
+FROM 
+  bigquery-public-data.sdoh_cdc_wonder_natality.county_natality 
+ORDER BY
+  Births DESC
+LIMIT 
+  10;
+
+--top for 2018
+SELECT 
+  * 
+FROM 
+  bigquery-public-data.sdoh_cdc_wonder_natality.county_natality 
+WHERE 
+  Year = '2018-01-01'
+ORDER BY
+  Births DESC
+LIMIT 
+  10;
+
+--Movie Info lecture
+--order by
+SELECT  
+*
+FROM 
+  `my-first-sandbox-394813.movie_data.movies`
+WHERE
+  Genre = 'Comedy'
+  AND Revenue > 300000000
+ORDER BY
+  Release_Date DESC;
+
+--Customer Info Lecture intro
+SELECT 
+  name,
+  city
+FROM `my-first-sandbox-394813.customer_data.customer_address`;
+
+--LENGTH
+SELECT 
+  LENGTH(country) AS letters_in_country
+FROM `my-first-sandbox-394813.customer_data.customer_address`;
+
+SELECT 
+  country
+FROM `my-first-sandbox-394813.customer_data.customer_address`
+WHERE
+  LENGTH(country)>2;
+
+--SUBSTRING
+SELECT 
+  DISTINCT customer_id
+FROM `my-first-sandbox-394813.customer_data.customer_address`
+WHERE
+  SUBSTR(country,1,2) = 'US';
+
+--TRIM
+SELECT 
+  DISTINCT customer_id
+FROM `my-first-sandbox-394813.customer_data.customer_address`
+WHERE
+  TRIM(state) = 'OH';
+
+--CAST 
+/**FLOAT is a number that contains decimals i.e. currency amount. 
+The schema misidentified the purchase price as a string so CAST
+will change it to FLOAT data. the 64 is the BIGQuery key for float.**/
+SELECT  
+  CAST(purchase_price AS FLOAT64)
+FROM `my-first-sandbox-394813.customer_data.customer_purchase`
+
+ORDER BY
+  CAST(purchase_price AS FLOAT64) DESC;
+
+--CAST date AS date
+SELECT  
+  CAST(date AS date) AS date_only,
+  purchase_price
+FROM 
+  `my-first-sandbox-394813.customer_data.customer_purchase`
+WHERE
+ date BETWEEN '2020-12-01' AND '2020-12-31'
+
+--CONCAT i.e. concadnate in excel
+SELECT  
+  CONCAT(product_code,product_color) AS new_product_code
+FROM 
+  `my-first-sandbox-394813.customer_data.customer_purchase`
+WHERE
+  product = 'couch';
+
+--COALESCE 
+/** can be used to return non-null values in a list.
+It tells SQL to return the names in one column, but if there is a null value
+to pull the name from a second column so there are no nulls in the returned list**/
+SELECT  
+  COALESCE(product, product_code) AS product_info 
+FROM 
+  `my-first-sandbox-394813.customer_data.customer_purchase`;
+
+  
+
+--LONDON BICYCLE HIRES
+--How many biketrips lasted for 20. minutes or longer?
+SELECT 
+  COUNT(*) AS num_of_biketrips
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE duration >= 1200;
+
+--What are the names of the stations that bike_id 1710 started from?
+SELECT 
+DISTINCT start_station_name
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE bike_id = 1710;
+
+-- How many bike_ids have ended at 'Moor Street,Soho'
+SELECT 
+  COUNT(DISTINCT bike_id) AS num_of_bikes
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE end_station_name = 'Moor Street, Soho';
+
+-- What is the station_id from 'Canton Street, Poplar'
+SELECT 
+  DISTINCT start_station_id
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE start_station_name = 'Canton Street, Poplar';
+
+-- What is the name of the station whose ID is 111?
+SELECT 
+  DISTINCT start_station_name
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE start_station_id = 111;
+
+-- How many distinct bike_ids had trip durations great than 2400 seconds (40 minutes)?
+SELECT
+  COUNT (DISTINCT bike_id) AS num_of_trips
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE duration >= 2400;
+
+-- Which station did thre renter ID 57635395 end?
+SELECT
+  end_station_name
+FROM `bigquery-public-data.london_bicycles.cycle_hire`
+WHERE
+  rental_id = 57635395;
+
+
+  --BABY NAMES 2014
+  --What were the top 5 baby names for boys in the Unites States in 2014?
+SELECT
+  name,
+  count 
+FROM `my-first-sandbox-394813.babynames.names_2014`
+WHERE
+  gender = 'M'
+ORDER BY
+  count DESC
+LIMIT
+  5; 
+
+--Car Data project
+--fuel type
+SELECT 
+  DISTINCT fuel_type
+FROM `my-first-sandbox-394813.cars.car_info`;
+
+--MIN/MAX length
+SELECT 
+  MIN(length) AS min_length,
+  MAX(length) AS max_length
+FROM `my-first-sandbox-394813.cars.car_info`;
+
+--Null values
+SELECT 
+  *
+FROM `my-first-sandbox-394813.cars.car_info`
+WHERE num_of_doors IS NULL;
+
+--UPDATE
+UPDATE 
+  `my-first-sandbox-394813.cars.car_info`
+SET 
+  num_of_doors = "four"
+WHERE
+  make = "dodge"
+  AND fuel_type = "gas"
+  AND body_style = "sedan";
+
+UPDATE 
+  `my-first-sandbox-394813.cars.car_info`
+SET 
+  num_of_doors = "four"
+WHERE
+  make = "mazda"
+  AND fuel_type = "gas"
+  AND body_style = "sedan";
+
+--Checking for other errors
+SELECT 
+  DISTINCT num_of_cylinders
+FROM 
+  `my-first-sandbox-394813.cars.car_info`;
+
+-- input other examples
+
+SELECT 
+  DISTINCT drive_wheels
+FROM 
+  `my-first-sandbox-394813.cars.car_info`;
+
+SELECT 
+  DISTINCT drive_wheels,
+  LENGTH(drive_wheels) AS string_length
+FROM 
+  `my-first-sandbox-394813.cars.car_info`;
+
+--Max price
+SELECT 
+  MAX(price)
+FROM 
+  `my-first-sandbox-394813.cars.car_info`;
