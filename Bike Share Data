@@ -43,3 +43,52 @@ SELECT
 FROM `bigquery-public-data.london_bicycles.cycle_hire`
 WHERE
   rental_id = 57635395;
+
+
+-- NEW YORK BICYCLE HIRES
+-- Here I was practicing using more complicated clauses and temporary tables in BigQuery
+
+--With clauses
+WITH trips_over_1_hr AS (
+  SELECT *
+  FROM bigquery-public-data.new_york_citibike.citibike_trips
+  WHERE
+    tripduration >= 60
+)
+
+## Count how many trips are 60+ minutes long
+SELECT
+  COUNT(*) AS CNT
+FROM 
+  trips_over_1_hr;
+
+## Temporary Table - which bike has been used the most/longest minutes ridden
+WITH longest_used_bike AS (
+  SELECT 
+    bike_id,
+    SUM(duration_minutes) AS trip_duration
+FROM
+  bigquery-public-data.austin_bikeshare.bikeshare_trips
+GROUP BY
+  bike_id
+ORDER BY
+  trip_duration DESC
+  LIMIT 1
+)
+
+## From which station does this bike start most frequently
+
+SELECT
+  trips.start_station_id, 
+  COUNT(*) AS trip_count
+FROM 
+  longest_used_bike AS longest
+  INNER JOIN
+    bigquery-public-data.austin_bikeshare.bikeshare_trips AS trips
+  ON 
+    longest.bike_id = trips.bike_id
+GROUP BY
+  trips.start_station_id
+ORDER BY
+  trip_count DESC
+LIMIT 1;
